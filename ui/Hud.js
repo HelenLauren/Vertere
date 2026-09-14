@@ -4,16 +4,18 @@ export default class Hud {
     this.vidas = vidas;
     this.coracoes = [];
 
-    for (let i = 0; i < 3; i++) {
-      const heart = this.scene.add.image(30 + i * 40, 30, 'heart_full').setDisplaySize(25, 25) .setScrollFactor(0).setDepth(9000);
-      this.coracoes.push(heart);
-    }
-
+    const HUD_DEPTH = 20000;
     const margin = 16;
     const heartWidth = 25;
     const heartSpacing = 6;
     const screenWidth = scene.cameras.main.width;
-    const HUD_DEPTH = 9000;
+
+    for (let i = 0; i < 3; i++) {
+      const heart = this.scene.add.image(30 + i * 40, 30, 'heart_full')
+        .setDisplaySize(25, 25)
+        .setScrollFactor(0);
+      this.coracoes.push(heart);
+    }
 
     const nomeX = margin + vidas * (heartWidth + heartSpacing) + 10;
 
@@ -23,7 +25,7 @@ export default class Hud {
       fontFamily: '"Press Start 2P"',
       stroke: '#3b2f2f',
       strokeThickness: 2
-    }).setScrollFactor(0).setDepth(HUD_DEPTH);
+    }).setScrollFactor(0);
 
     this.btnMenu = scene.add.text(screenWidth - margin, margin + 2, 'Menu', {
       fontSize: '16px',
@@ -35,8 +37,7 @@ export default class Hud {
       strokeThickness: 2
     }).setScrollFactor(0)
       .setOrigin(1, 0)
-      .setInteractive({ useHandCursor: true })
-      .setDepth(HUD_DEPTH + 1);
+      .setInteractive({ useHandCursor: true });
 
     this.btnMenu.on('pointerdown', () => {
       this.abrirMenuModal();
@@ -46,7 +47,7 @@ export default class Hud {
       ...this.coracoes,
       this.nomeTexto,
       this.btnMenu
-    ]).setScrollFactor(0);
+    ]).setScrollFactor(0).setDepth(HUD_DEPTH);
   }
 
   atualizarVidas(vidasRestantes) {
@@ -66,10 +67,9 @@ export default class Hud {
     const centerX = width / 2;
     const centerY = height / 2;
 
-    const HUD_DEPTH = 9000;
-    const MODAL_DEPTH_BACKGROUND = 10000;
-    const MODAL_DEPTH_UI = 10001;
-    const MODAL_DEPTH_BUTTON = 10002;
+    const MODAL_DEPTH_BACKGROUND = 30000;
+    const MODAL_DEPTH_UI = 30001;
+    const MODAL_DEPTH_BUTTON = 30002;
 
     this.container.setVisible(false);
     this.modalBackground = this.scene.add.rectangle(
@@ -164,7 +164,7 @@ export default class Hud {
       },
     }).setOrigin(0.5)
       .setInteractive({ useHandCursor: true })
-      .setDepth(2002)
+      .setDepth(30002)
       .setScrollFactor(0);
 
     btn.on('pointerdown', callback);
