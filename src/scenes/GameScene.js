@@ -1,15 +1,9 @@
-import Player from '../../entidades/Player.js';
-import Hud from '../../ui/Hud.js';
+import BaseLevelScene from './BaseLevelScene.js';
 import GameSpawner from '../ambientacao/GameSpawner.js';
 
-export default class GameScene extends Phaser.Scene {
+export default class GameScene extends BaseLevelScene {
   constructor() {
     super('GameScene');
-    this.tileSize = 6;
-    this.cols = 512;
-    this.rows = 224;
-    this.worldWidth = this.cols * this.tileSize;
-    this.worldHeight = this.rows * this.tileSize;
     this.tutorialStep = 0;
   }
 
@@ -22,6 +16,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('heart_empty', 'assets/images/coracaoCinza.PNG');
     this.load.image('package', 'assets/images/package.png');
     this.load.audio('gameMusic', 'assets/audio/game_theme.mp3');
+
     this.load.image('Broken_tree1', 'assets/images/trees/Broken_tree1.png');
     this.load.image('Broken_tree3', 'assets/images/trees/Broken_tree3.png');
     this.load.image('Tree1', 'assets/images/trees/Tree1.png');
@@ -49,82 +44,57 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.music = this.sound.add('gameMusic', { loop: true, volume: 0.4 });
-    this.music.play();
+    this.tutorialStep = 0;
 
-    const personagemSelecionado = localStorage.getItem('personagemSelecionado');
-    if (!personagemSelecionado) {
-      this.scene.start('BootScene');
-      return;
-    }
-
-    const graphics = this.add.graphics();
-    for (let y = 0; y < this.rows; y++) {
-      for (let x = 0; x < this.cols; x++) {
-        const color = Phaser.Math.Between(0, 1) === 0 ? 0x018600 : 0x018e00;
-        graphics.fillStyle(color, 1);
-        graphics.fillRect(x * this.tileSize, y * this.tileSize, this.tileSize, this.tileSize);
-      }
-    }
-    this.hud = new Hud(this, personagemSelecionado);
-    const gameSpawner = new GameSpawner(this);
-    gameSpawner.spawnTrees?.();
-    gameSpawner.spawnBush?.();
-    gameSpawner.spawnHouses?.();
-
-    this.player = new Player(this, 500, 400, personagemSelecionado);
-
-    this.cameras.main.startFollow(this.player);
-    this.cameras.main.setBounds(0, 0, this.worldWidth, this.worldHeight);
-
-    this.cursors = this.input.keyboard.createCursorKeys();
-
-    this.package = this.matter.add.image(1680, 700, 'package', null, { isStatic: true });
-    this.package.setData('tag', 'package');
-
-    this.portalMain = null;
-    this.portalRings = [];
-
-    this.matter.world.on('collisionstart', (event) => {
-      event.pairs.forEach((pair) => {
-        const tagA = pair.bodyA.gameObject?.getData?.('tag');
-        const tagB = pair.bodyB.gameObject?.getData?.('tag');
-
-        if ([tagA, tagB].includes('player') && [tagA, tagB].includes('package')) {
-          this.package.destroy();
-          this.spawnPortal();
-          if (this.tutorialStep === 1) {
-            this.showTutorialAfterPackageModal();
-            this.tutorialStep = 2;
-          }
-        }
-
-        if ([tagA, tagB].includes('player') && [tagA, tagB].includes('portal')) {
-          this.player.setVelocity(0);
-          this.player.body.isStatic = true;
-          this.showLevelCompleteModal();
-        }
-      });
+    const initialized = this.initLevel({
+      musicKey: 'gameMusic',
+      musicVolume: 0.4,
+      groundKey: 'ground_forest',
+      groundColor1: 0x018600,
+      groundColor2: 0x018e00,
+      playerX: 500,
+      playerY: 400,
+      packageX: 1680,
+      packageY: 700,
+      portalX: 350,
+      portalY: 280
     });
+
+    if (!initialized) return;
+
+    const gameSpawner = new GameSpawner(this);
+    gameSpawner.spawnTrees();
+    gameSpawner.spawnBush();
+    gameSpawner.spawnHouses();
 
     this.showTutorialStartModal();
   }
 
-  showTutorialStartModal() {
-    const hudDepth = 9000;
-    this.modalBackground = this.add.rectangle(
-      this.cameras.main.worldView.x + this.cameras.main.width / 2,
-      this.cameras.main.worldView.y + this.cameras.main.height / 2,
-      this.cameras.main.width,
-      this.cameras.main.height,
-      0x000000,
-      0.6
-    ).setScrollFactor(0).setDepth(hudDepth - 1);
+  onPackageCollected() {
+    super.onPackageCollected();
+    if (this.tutorialStep === 1) {
+      this.showTutorialAfterPackageModal();
+      this.tutorialStep = 2;
+    }
+  }
 
-    this.modalContainer = this.add.container(
-      this.cameras.main.worldView.x + this.cameras.main.width / 2,
-      this.cameras.main.worldView.y + this.cameras.main.height / 2
-    ).setScrollFactor(0).setDepth(hudDepth);
+  onPortalReached() {
+    this.showLevelCompleteModal({
+      nextSceneKey: 'IceScene',
+      progressIndex: 2
+    });
+  }
+
+  showTutorialStartModal() {
+    const hudDepth = 30000;
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2;
+
+    this.modalBackground = this.add.rectangle(
+      centerX, centerY,
+      this.scale.width, this.scale.height,
+      0x000000, 0.6
+    ).setScrollFactor(0).setDepth(hudDepth - 1);
 
     const panel = this.add.rectangle(0, 0, 400, 200, 0xffffff, 1).setStrokeStyle(2, 0x000000);
     const text = this.add.text(0, -40,
@@ -137,35 +107,30 @@ export default class GameScene extends Phaser.Scene {
       color: '#0077ff',
       backgroundColor: '#cce5ff',
       padding: { x: 10, y: 5 },
-    }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     btn.on('pointerdown', () => {
       this.destroyModal();
       this.tutorialStep = 1;
     });
 
-    this.modalContainer.add([panel, text, btn]);
+    this.modalContainer = this.add.container(centerX, centerY, [panel, text, btn])
+      .setScrollFactor(0)
+      .setDepth(hudDepth);
   }
 
   showTutorialAfterPackageModal() {
-    const hudDepth = 9000;
+    const hudDepth = 30000;
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
 
     this.modalBackground = this.add.rectangle(
       centerX, centerY,
-      this.scale.width,
-      this.scale.height,
-      0x000000,
-      0.6
+      this.scale.width, this.scale.height,
+      0x000000, 0.6
     ).setScrollFactor(0).setDepth(hudDepth - 1);
 
-    this.modalContainer = this.add.container(centerX, centerY)
-      .setScrollFactor(0)
-      .setDepth(hudDepth);
-
-    const panel = this.add.rectangle(0, 0, 400, 200, 0xffffff, 1)
-      .setStrokeStyle(2, 0x000000);
+    const panel = this.add.rectangle(0, 0, 400, 200, 0xffffff, 1).setStrokeStyle(2, 0x000000);
     const text = this.add.text(0, -40,
       'Ótimo!\nAgora volte ao portal que apareceu onde você acordou.',
       {
@@ -174,129 +139,21 @@ export default class GameScene extends Phaser.Scene {
         align: 'center',
         wordWrap: { width: 360 }
       }
-    ).setScrollFactor(0).setOrigin(0.5);
+    ).setOrigin(0.5);
 
     const btn = this.add.text(0, 50, 'OK!', {
       fontSize: '20px',
       color: '#0077ff',
       backgroundColor: '#cce5ff',
       padding: { x: 10, y: 5 },
-    }).setScrollFactor(0).setOrigin(0.5).setInteractive();
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     btn.on('pointerdown', () => {
       this.destroyModal();
     });
 
-    this.modalContainer.add([panel, text, btn]);
-  }
-
-
-  showLevelCompleteModal() {
-    const hudDepth = 9000;
-    this.modalBackground = this.add.rectangle(
-      this.cameras.main.worldView.x + this.cameras.main.width / 2,
-      this.cameras.main.worldView.y + this.cameras.main.height / 2,
-      this.cameras.main.width,
-      this.cameras.main.height,
-      0x000000,
-      0.6
-    ).setScrollFactor(0).setDepth(hudDepth-1);
-
-    this.modalContainer = this.add.container(
-      this.cameras.main.worldView.x + this.cameras.main.width / 2,
-      this.cameras.main.worldView.y + this.cameras.main.height / 2
-    ).setScrollFactor(0).setDepth(hudDepth);
-
-    const panel = this.add.rectangle(0, 0, 300, 200, 0xffffff, 1).setStrokeStyle(2, 0x000000);
-    const title = this.add.text(0, -70, 'Fase Completa!', {
-      fontSize: '24px',
-      color: '#000',
-      fontStyle: 'bold',
-    }).setOrigin(0.5);
-
-    const progresso = JSON.parse(localStorage.getItem('progressoFases')) || {};
-    progresso[2] = true;
-    localStorage.setItem('progressoFases', JSON.stringify(progresso));
-
-    const btnNext = this.add.text(0, -20, 'Próxima Fase', {
-      fontSize: '20px',
-      color: '#0077ff',
-      backgroundColor: '#cce5ff',
-      padding: { x: 10, y: 5 },
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-    btnNext.on('pointerdown', () => {
-      this.destroyModal();
-      this.music.stop();
-      this.scene.start('IceScene');
-    });
-
-    const btnRestart = this.add.text(0, 30, 'Reiniciar Fase', {
-      fontSize: '20px',
-      color: '#0077ff',
-      backgroundColor: '#cce5ff',
-      padding: { x: 10, y: 5 },
-    }).setOrigin(0.5).setInteractive();
-    btnRestart.on('pointerdown', () => {
-      this.destroyModal();
-      this.music.stop();
-      this.scene.restart();
-    });
-
-    const btnMenu = this.add.text(0, 80, 'Menu Principal', {
-      fontSize: '20px',
-      color: '#0077ff',
-      backgroundColor: '#cce5ff',
-      padding: { x: 10, y: 5 },
-    }).setOrigin(0.5).setInteractive();
-    btnMenu.on('pointerdown', () => {
-      this.destroyModal();
-      this.music.stop();
-      this.scene.start('MenuScene');
-    });
-
-    this.modalContainer.add([panel, title, btnNext, btnRestart, btnMenu]);
-  }
-  
-  destroyModal() {
-    this.modalBackground?.destroy();
-    this.modalContainer?.destroy();
-  }
-
-  spawnPortal() {
-    const x = 350;
-    const y = 280;
-
-    this.portalMain?.destroy();
-    this.portalRings.forEach(r => r.sprite.destroy());
-    this.portalRings = [];
-
-    this.portalMain = this.add.image(x, y, 'portal_center').setScale(1).setAlpha(0.9);
-    this.matter.add.gameObject(this.portalMain, {
-      shape: { type: 'circle', radius: 30 },
-      isStatic: true,
-      isSensor: true,
-    });
-    this.portalMain.setData('tag', 'portal');
-
-    for (let i = 1; i <= 2; i++) {
-      const ring = this.add.circle(x, y, 30 + i * 10, 0xDF9CFF, 0.3);
-      this.portalRings.push({ sprite: ring, baseRadius: 30 + i * 10, scale: 1, growing: true });
-    }
-  }
-
-  update() {
-    this.player?.updateMovement?.(this.cursors);
-    this.portalMain?.setRotation(this.portalMain.rotation + 0.02);
-    this.portalRings.forEach(ring => {
-      ring.scale += ring.growing ? 0.01 : -0.01;
-      if (ring.scale >= 1.0) ring.growing = false;
-      if (ring.scale <= 1) ring.growing = true;
-      ring.sprite.setScale(ring.scale);
-    });
-  }
-
-  shutdown() {
-    if (this.music?.isPlaying) this.music.stop();
+    this.modalContainer = this.add.container(centerX, centerY, [panel, text, btn])
+      .setScrollFactor(0)
+      .setDepth(hudDepth);
   }
 }
