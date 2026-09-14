@@ -1,11 +1,19 @@
+import { WORLD_CONFIG } from '../config/constants.js';
+
+/**
+ * Gerador e organizador de ambientação da Fase 1 e Fase Final (Floresta e Vila).
+ */
 export default class GameSpawner {
+  /**
+   * @param {Phaser.Scene} scene
+   */
   constructor(scene) {
     this.scene = scene;
-    this.tileSize = 6;
-    this.cols = 512;
-    this.rows = 224;
-    this.worldWidth = this.cols * this.tileSize;  // 3072
-    this.worldHeight = this.rows * this.tileSize; // 1344
+    this.tileSize = WORLD_CONFIG.TILE_SIZE;
+    this.cols = WORLD_CONFIG.COLS;
+    this.rows = WORLD_CONFIG.ROWS;
+    this.worldWidth = WORLD_CONFIG.WIDTH;
+    this.worldHeight = WORLD_CONFIG.HEIGHT;
 
     this.houseImages = [
       'medievalHouse4',
@@ -36,6 +44,15 @@ export default class GameSpawner {
     ];
   }
 
+  /**
+   * Verifica se a coordenada candidata colide com posições já ocupadas.
+   * 
+   * @param {number} x
+   * @param {number} y
+   * @param {Array<{x: number, y: number}>} usedPositions
+   * @param {number} [minDist=80]
+   * @returns {boolean}
+   */
   isPositionTaken(x, y, usedPositions, minDist = 80) {
     const minDistSq = minDist * minDist;
     const centerX = this.worldWidth / 2;
@@ -54,6 +71,14 @@ export default class GameSpawner {
     return false;
   }
 
+  /**
+   * Adiciona uma árvore com corpo estático na física Matter.js.
+   * 
+   * @param {number} x
+   * @param {number} y
+   * @param {string} key
+   * @param {number} scale
+   */
   addTree(x, y, key, scale) {
     const tree = this.scene.add.image(x, y, key);
     tree.setScale(scale);
@@ -74,6 +99,9 @@ export default class GameSpawner {
     tree.setDepth(tree.y);
   }
 
+  /**
+   * Popula o mapa com grupos e bordas de árvores.
+   */
   spawnTrees() {
     this.treePositions.forEach(pos => {
       const key = Phaser.Utils.Array.GetRandom(this.treeKeys);
@@ -156,6 +184,9 @@ export default class GameSpawner {
     }
   }
 
+  /**
+   * Adiciona arbustos decorativos próximos às árvores.
+   */
   spawnBush() {
     const bushSize = 50;
     const uniqueBushPositions = [];
@@ -173,6 +204,9 @@ export default class GameSpawner {
     });
   }
 
+  /**
+   * Adiciona as casas estáticas com corpos de colisão.
+   */
   spawnHouses() {
     const houseSize = 220;
     const spacing = 10;

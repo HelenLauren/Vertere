@@ -1,11 +1,19 @@
+import { WORLD_CONFIG } from '../config/constants.js';
+
+/**
+ * Gerador e organizador de ambientação da Fase 2 (Gelo).
+ */
 export default class IceSpawner {
+  /**
+   * @param {Phaser.Scene} scene
+   */
   constructor(scene) {
     this.scene = scene;
-    this.tileSize = 6;
-    this.cols = 512;
-    this.rows = 224;
-    this.worldWidth = this.cols * this.tileSize;
-    this.worldHeight = this.rows * this.tileSize;
+    this.tileSize = WORLD_CONFIG.TILE_SIZE;
+    this.cols = WORLD_CONFIG.COLS;
+    this.rows = WORLD_CONFIG.ROWS;
+    this.worldWidth = WORLD_CONFIG.WIDTH;
+    this.worldHeight = WORLD_CONFIG.HEIGHT;
 
     this.treeKeys = [
       'Snow_tree1.png', 'Snow_tree2.png', 'Snow_tree3.png',
@@ -54,6 +62,12 @@ export default class IceSpawner {
     ];
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} [minDist=100]
+   * @returns {boolean}
+   */
   isPositionBlocked(x, y, minDist = 100) {
     const minDistSq = minDist * minDist;
     for (let i = 0; i < this.blockedAreas.length; i++) {
@@ -65,6 +79,13 @@ export default class IceSpawner {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {Array<{x: number, y: number}>} usedPositions
+   * @param {number} [minDist=60]
+   * @returns {boolean}
+   */
   isPositionTaken(x, y, usedPositions, minDist = 60) {
     const minDistSq = minDist * minDist;
     for (let i = 0; i < usedPositions.length; i++) {
@@ -76,6 +97,13 @@ export default class IceSpawner {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} key
+   * @param {number} [scale=1]
+   * @param {{widthFactor: number, heightFactor: number}} [hitbox]
+   */
   addStaticAsset(x, y, key, scale = 1, hitbox = { widthFactor: 0.1, heightFactor: 0.1 }) {
     const sprite = this.scene.add.image(x, y, key).setScale(scale).setOrigin(0.5, 1);
     sprite.setDepth(sprite.y - 100);
@@ -89,6 +117,12 @@ export default class IceSpawner {
     this.blockedAreas.push({ x, y, radius: 100 });
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} key
+   * @param {number} scale
+   */
   addTree(x, y, key, scale) {
     const tree = this.scene.add.image(x, y, key);
     tree.setScale(scale);

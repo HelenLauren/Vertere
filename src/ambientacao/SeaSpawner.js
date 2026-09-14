@@ -1,11 +1,19 @@
+import { WORLD_CONFIG } from '../config/constants.js';
+
+/**
+ * Gerador e organizador de ambientação da Fase 3 (Oceano).
+ */
 export default class SeaSpawner {
+  /**
+   * @param {Phaser.Scene} scene
+   */
   constructor(scene) {
     this.scene = scene;
-    this.tileSize = 6;
-    this.cols = 512;
-    this.rows = 224;
-    this.worldWidth = this.cols * this.tileSize;
-    this.worldHeight = this.rows * this.tileSize;
+    this.tileSize = WORLD_CONFIG.TILE_SIZE;
+    this.cols = WORLD_CONFIG.COLS;
+    this.rows = WORLD_CONFIG.ROWS;
+    this.worldWidth = WORLD_CONFIG.WIDTH;
+    this.worldHeight = WORLD_CONFIG.HEIGHT;
 
     this.ruinImages = ['ruins1', 'ruins2'];
 
@@ -29,6 +37,13 @@ export default class SeaSpawner {
     ];
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {Array<{x: number, y: number}>} usedPositions
+   * @param {number} [minDist=50]
+   * @returns {boolean}
+   */
   isPositionTaken(x, y, usedPositions, minDist = 50) {
     const minDistSq = minDist * minDist;
     for (let i = 0; i < usedPositions.length; i++) {
@@ -40,6 +55,12 @@ export default class SeaSpawner {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {number} [minDist=150]
+   * @returns {boolean}
+   */
   isNearRuins(x, y, minDist = 150) {
     const minDistSq = minDist * minDist;
     for (let i = 0; i < this.ruinPositions.length; i++) {
@@ -51,6 +72,12 @@ export default class SeaSpawner {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} key
+   * @param {number} scale
+   */
   addCoral(x, y, key, scale) {
     const coral = this.scene.add.image(x, y, key);
     coral.setScale(scale);

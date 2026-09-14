@@ -1,11 +1,19 @@
+import { WORLD_CONFIG } from '../config/constants.js';
+
+/**
+ * Gerador e organizador de ambientação da Fase 4 (Reino Medieval).
+ */
 export default class MedievalSpawner {
+  /**
+   * @param {Phaser.Scene} scene
+   */
   constructor(scene) {
     this.scene = scene;
-    this.tileSize = 6;
-    this.cols = 512;
-    this.rows = 224;
-    this.worldWidth = this.cols * this.tileSize;  // 3072
-    this.worldHeight = this.rows * this.tileSize; // 1344
+    this.tileSize = WORLD_CONFIG.TILE_SIZE;
+    this.cols = WORLD_CONFIG.COLS;
+    this.rows = WORLD_CONFIG.ROWS;
+    this.worldWidth = WORLD_CONFIG.WIDTH;
+    this.worldHeight = WORLD_CONFIG.HEIGHT;
 
     this.houseImages = [
       'medievalHouse1',
@@ -36,6 +44,13 @@ export default class MedievalSpawner {
     ];
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {Array<{x: number, y: number}>} usedPositions
+   * @param {number} [minDist=50]
+   * @returns {boolean}
+   */
   isPositionTaken(x, y, usedPositions, minDist = 50) {
     const minDistSq = minDist * minDist;
     for (let i = 0; i < usedPositions.length; i++) {
@@ -47,6 +62,12 @@ export default class MedievalSpawner {
     return false;
   }
 
+  /**
+   * @param {number} x
+   * @param {number} y
+   * @param {string} key
+   * @param {number} scale
+   */
   addTree(x, y, key, scale) {
     const tree = this.scene.add.image(x, y, key);
     tree.setScale(scale);
