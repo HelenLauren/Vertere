@@ -1,6 +1,10 @@
 import BaseLevelScene from './BaseLevelScene.js';
 import GameSpawner from '../ambientacao/GameSpawner.js';
+import { DEPTHS } from '../config/constants.js';
 
+/**
+ * Fase 1 do jogo Vertere (Floresta / Tutorial).
+ */
 export default class GameScene extends BaseLevelScene {
   constructor() {
     super('GameScene');
@@ -8,15 +12,10 @@ export default class GameScene extends BaseLevelScene {
   }
 
   preload() {
-    this.load.spritesheet('Helen', 'entidades/helen_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Helena', 'entidades/helena_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Raissa', 'entidades/raissa_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.image('portal_center', 'assets/images/portal.png');
-    this.load.image('heart_full', 'assets/images/coracaoRosa.png');
-    this.load.image('heart_empty', 'assets/images/coracaoCinza.PNG');
-    this.load.image('package', 'assets/images/package.png');
+    this.preloadSharedAssets();
     this.load.audio('gameMusic', 'assets/audio/game_theme.mp3');
 
+    // Árvores
     this.load.image('Broken_tree1', 'assets/images/trees/Broken_tree1.png');
     this.load.image('Broken_tree3', 'assets/images/trees/Broken_tree3.png');
     this.load.image('Tree1', 'assets/images/trees/Tree1.png');
@@ -25,6 +24,8 @@ export default class GameScene extends BaseLevelScene {
     this.load.image('fruitTree1', 'assets/images/trees/Fruit_tree1.png');
     this.load.image('fruitTree2', 'assets/images/trees/Fruit_tree2.png');
     this.load.image('fruitTree3', 'assets/images/trees/Fruit_tree3.png');
+
+    // Arbustos
     this.load.image('bush21', 'assets/images/bush/Bush_simple2_1.png');
     this.load.image('bush22', 'assets/images/bush/Bush_simple2_2.png');
     this.load.image('bush23', 'assets/images/bush/Bush_simple2_3.png');
@@ -35,6 +36,8 @@ export default class GameScene extends BaseLevelScene {
     this.load.image('pinkflowerbush1', 'assets/images/bush/Bush_pink_flowers1.png');
     this.load.image('pinkflowerbush2', 'assets/images/bush/Bush_pink_flowers2.png');
     this.load.image('pinkflowerbush3', 'assets/images/bush/Bush_pink_flowers3.png');
+
+    // Casas
     this.load.image('medievalHouse4', 'assets/images/medieval/medievalHouse4.png');
     this.load.image('medievalHouse5', 'assets/images/medieval/medievalHouse5.png');
     this.load.image('medievalHouse6', 'assets/images/medieval/medievalHouse6.png');
@@ -86,52 +89,63 @@ export default class GameScene extends BaseLevelScene {
   }
 
   showTutorialStartModal() {
-    const hudDepth = 30000;
+    this.destroyModal();
+
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
 
-    this.modalBackground = this.add.rectangle(
+    const bg = this.add.rectangle(
       centerX, centerY,
       this.scale.width, this.scale.height,
       0x000000, 0.6
-    ).setScrollFactor(0).setDepth(hudDepth - 1);
+    ).setScrollFactor(0).setDepth(DEPTHS.MODAL_BACKGROUND);
 
-    const panel = this.add.rectangle(0, 0, 400, 200, 0xffffff, 1).setStrokeStyle(2, 0x000000);
-    const text = this.add.text(0, -40,
+    const panel = this.add.rectangle(centerX, centerY, 400, 200, 0xffffff, 1)
+      .setStrokeStyle(2, 0x000000)
+      .setScrollFactor(0)
+      .setDepth(DEPTHS.MODAL_CONTAINER);
+
+    const text = this.add.text(centerX, centerY - 40,
       'Você acaba de acordar em um lugar estranho...\nEncontre o pacote perdido!',
       { fontSize: '18px', color: '#000', align: 'center', wordWrap: { width: 360 } }
-    ).setOrigin(0.5);
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTHS.MODAL_CONTAINER);
 
-    const btn = this.add.text(0, 50, 'Entendido', {
+    const btn = this.add.text(centerX, centerY + 50, 'Entendido', {
       fontSize: '20px',
       color: '#0077ff',
       backgroundColor: '#cce5ff',
       padding: { x: 10, y: 5 },
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    }).setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(DEPTHS.MODAL_BUTTON)
+      .setInteractive({ useHandCursor: true });
 
     btn.on('pointerdown', () => {
       this.destroyModal();
       this.tutorialStep = 1;
     });
 
-    this.modalContainer = this.add.container(centerX, centerY, [panel, text, btn])
-      .setScrollFactor(0)
-      .setDepth(hudDepth);
+    this.modalElements = [bg, panel, text, btn];
   }
 
   showTutorialAfterPackageModal() {
-    const hudDepth = 30000;
+    this.destroyModal();
+
     const centerX = this.scale.width / 2;
     const centerY = this.scale.height / 2;
 
-    this.modalBackground = this.add.rectangle(
+    const bg = this.add.rectangle(
       centerX, centerY,
       this.scale.width, this.scale.height,
       0x000000, 0.6
-    ).setScrollFactor(0).setDepth(hudDepth - 1);
+    ).setScrollFactor(0).setDepth(DEPTHS.MODAL_BACKGROUND);
 
-    const panel = this.add.rectangle(0, 0, 400, 200, 0xffffff, 1).setStrokeStyle(2, 0x000000);
-    const text = this.add.text(0, -40,
+    const panel = this.add.rectangle(centerX, centerY, 400, 200, 0xffffff, 1)
+      .setStrokeStyle(2, 0x000000)
+      .setScrollFactor(0)
+      .setDepth(DEPTHS.MODAL_CONTAINER);
+
+    const text = this.add.text(centerX, centerY - 40,
       'Ótimo!\nAgora volte ao portal que apareceu onde você acordou.',
       {
         fontSize: '18px',
@@ -139,21 +153,22 @@ export default class GameScene extends BaseLevelScene {
         align: 'center',
         wordWrap: { width: 360 }
       }
-    ).setOrigin(0.5);
+    ).setOrigin(0.5).setScrollFactor(0).setDepth(DEPTHS.MODAL_CONTAINER);
 
-    const btn = this.add.text(0, 50, 'OK!', {
+    const btn = this.add.text(centerX, centerY + 50, 'OK!', {
       fontSize: '20px',
       color: '#0077ff',
       backgroundColor: '#cce5ff',
       padding: { x: 10, y: 5 },
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+    }).setOrigin(0.5)
+      .setScrollFactor(0)
+      .setDepth(DEPTHS.MODAL_BUTTON)
+      .setInteractive({ useHandCursor: true });
 
     btn.on('pointerdown', () => {
       this.destroyModal();
     });
 
-    this.modalContainer = this.add.container(centerX, centerY, [panel, text, btn])
-      .setScrollFactor(0)
-      .setDepth(hudDepth);
+    this.modalElements = [bg, panel, text, btn];
   }
 }

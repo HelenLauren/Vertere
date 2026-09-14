@@ -1,3 +1,8 @@
+import { DEPTHS, STORAGE_KEYS } from '../config/constants.js';
+
+/**
+ * Cena de Menu Principal, seleção de personagem, instruções e seleção de fases.
+ */
 export default class MenuScene extends Phaser.Scene {
   constructor() {
     super('MenuScene');
@@ -18,11 +23,11 @@ export default class MenuScene extends Phaser.Scene {
 
     this.backgroundImage = this.add.image(this.centerX, this.centerY, 'background')
       .setOrigin(0.5)
-      .setDepth(-1)
+      .setDepth(DEPTHS.BACKGROUND_IMAGE)
       .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
 
-    if (!localStorage.getItem('progressoFases')) {
-      localStorage.setItem('progressoFases', JSON.stringify({ 1: true }));
+    if (!localStorage.getItem(STORAGE_KEYS.PROGRESSO_FASES)) {
+      localStorage.setItem(STORAGE_KEYS.PROGRESSO_FASES, JSON.stringify({ 1: true }));
     }
 
     this.createMainMenu();
@@ -47,6 +52,9 @@ export default class MenuScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Cria o menu principal inicial com os botões de ação.
+   */
   createMainMenu() {
     this.menuContainer = this.add.container(this.centerX, this.centerY - 80);
 
@@ -79,7 +87,7 @@ export default class MenuScene extends Phaser.Scene {
     const btnResetar = this.createMenuButton('Resetar Progresso', 200, () => {
       const confirmar = confirm('Tem certeza que deseja resetar seu progresso?');
       if (confirmar) {
-        localStorage.removeItem('progressoFases');
+        localStorage.removeItem(STORAGE_KEYS.PROGRESSO_FASES);
         this.scene.restart();
       }
     });
@@ -87,6 +95,14 @@ export default class MenuScene extends Phaser.Scene {
     this.menuContainer.add([title, btnJogar, btnSelecionarFase, btnComoJogar, btnSobre, btnResetar]);
   }
 
+  /**
+   * Utilitário para criação de botões estilizados do menu.
+   * 
+   * @param {string} text
+   * @param {number} y
+   * @param {Function} callback
+   * @returns {Phaser.GameObjects.Text}
+   */
   createMenuButton(text, y, callback) {
     const btn = this.add.text(0, y, text, {
       fontSize: '12px',
@@ -123,6 +139,9 @@ export default class MenuScene extends Phaser.Scene {
     return btn;
   }
 
+  /**
+   * Constrói a seção de seleção de personagens.
+   */
   createSelecionarPersonagemSection() {
     this.selecionarPersonagemContainer = this.add.container(this.centerX, this.centerY);
     const bg = this.add.rectangle(0, 0, 640, 400, 0x3b2f2f, 0.8).setOrigin(0.5);
@@ -198,6 +217,11 @@ export default class MenuScene extends Phaser.Scene {
     this.selecionarPersonagemContainer.setVisible(false);
   }
 
+  /**
+   * Abre a tela de confirmação/prévia do personagem selecionado.
+   * 
+   * @param {string} personagemKey
+   */
   startPreview(personagemKey) {
     this.selectedCharacter = personagemKey;
     if (this.personagem) this.personagem.destroy();
@@ -253,7 +277,7 @@ export default class MenuScene extends Phaser.Scene {
 
     this.clearEnterListener();
     this.enterKeyHandler = () => {
-      localStorage.setItem('personagemSelecionado', personagemKey);
+      localStorage.setItem(STORAGE_KEYS.PERSONAGEM_SELECIONADO, personagemKey);
       if (this.menuMusic) {
         this.menuMusic.stop();
       }
@@ -263,6 +287,9 @@ export default class MenuScene extends Phaser.Scene {
     this.input.keyboard.once('keydown-ENTER', this.enterKeyHandler);
   }
 
+  /**
+   * Remove o listener de confirmação via teclado.
+   */
   clearEnterListener() {
     if (this.enterKeyHandler) {
       this.input.keyboard.off('keydown-ENTER', this.enterKeyHandler);
@@ -270,6 +297,9 @@ export default class MenuScene extends Phaser.Scene {
     }
   }
 
+  /**
+   * Constrói a seção de informações do jogo.
+   */
   createSobreSection() {
     this.sobreContainer = this.add.container(this.centerX, this.centerY);
 
@@ -310,6 +340,9 @@ export default class MenuScene extends Phaser.Scene {
     this.sobreContainer.setVisible(false);
   }
 
+  /**
+   * Constrói a seção com instruções de como jogar.
+   */
   createComoJogarSection() {
     this.comoJogarContainer = this.add.container(this.centerX, this.centerY);
 
@@ -350,6 +383,9 @@ export default class MenuScene extends Phaser.Scene {
     this.comoJogarContainer.setVisible(false);
   }
 
+  /**
+   * Constrói a seção de seleção de fases com bloqueio/desbloqueio por progresso.
+   */
   createSelecionarFaseSection() {
     this.selecionarFaseContainer = this.add.container(this.centerX, this.centerY);
 
@@ -375,9 +411,9 @@ export default class MenuScene extends Phaser.Scene {
       { nome: 'Fase Final', key: 'FinalScene' }
     ];
 
-    const progresso = JSON.parse(localStorage.getItem('progressoFases')) || {};
+    const progresso = JSON.parse(localStorage.getItem(STORAGE_KEYS.PROGRESSO_FASES)) || {};
     progresso[1] = true;
-    localStorage.setItem('progressoFases', JSON.stringify(progresso));
+    localStorage.setItem(STORAGE_KEYS.PROGRESSO_FASES, JSON.stringify(progresso));
     this.faseButtons = [];
 
     const colCount = 3;

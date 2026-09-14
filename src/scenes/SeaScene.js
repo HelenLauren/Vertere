@@ -2,19 +2,16 @@ import BaseLevelScene from './BaseLevelScene.js';
 import Enemy from '../../entidades/Enemy.js';
 import SeaSpawner from '../ambientacao/SeaSpawner.js';
 
+/**
+ * Fase 3 do jogo (Fundo do Mar / Oceano).
+ */
 export default class SeaScene extends BaseLevelScene {
   constructor() {
     super('SeaScene');
   }
 
   preload() {
-    this.load.spritesheet('Helen', 'entidades/helen_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Helena', 'entidades/helena_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Raissa', 'entidades/raissa_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.image('portal_center', 'assets/images/portal.png');
-    this.load.image('heart_full', 'assets/images/coracaoRosa.png');
-    this.load.image('heart_empty', 'assets/images/coracaoCinza.PNG');
-    this.load.image('package', 'assets/images/package.png');
+    this.preloadSharedAssets();
     this.load.audio('sea_theme', 'assets/audio/sea_theme.mp3');
 
     this.load.image('ruins1', 'assets/images/sea/ruins1.png');

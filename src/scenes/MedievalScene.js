@@ -2,20 +2,21 @@ import BaseLevelScene from './BaseLevelScene.js';
 import Enemy from '../../entidades/Enemy.js';
 import MedievalSpawner from '../ambientacao/MedievalSpawner.js';
 
+/**
+ * Fase 4 do jogo (Reino Medieval)
+ */
 export default class MedievalScene extends BaseLevelScene {
   constructor() {
     super('MedievalScene');
   }
 
   preload() {
-    this.load.spritesheet('Helen', 'entidades/helen_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Helena', 'entidades/helena_idle.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.spritesheet('Raissa', 'entidades/raissa_idle.png', { frameWidth: 64, frameHeight: 64 });
+    this.preloadSharedAssets();
     this.load.spritesheet('vampiro1', 'entidades/vampiro1.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('vampiro2', 'entidades/vampiro2.png', { frameWidth: 64, frameHeight: 64 });
-    this.load.image('portal_center', 'assets/images/portal.png');
-    this.load.image('heart_full', 'assets/images/coracaoRosa.png');
-    this.load.image('heart_empty', 'assets/images/coracaoCinza.PNG');
+    this.load.audio('medievalMusic', 'assets/audio/medieval_theme.mp3');
+
+    // Árvores de Outono e Queimadas
     this.load.image('Autumn_tree1', 'assets/images/trees/Autumn_tree1.png');
     this.load.image('Autumn_tree2', 'assets/images/trees/Autumn_tree2.png');
     this.load.image('Autumn_tree3', 'assets/images/trees/Autumn_tree3.png');
@@ -27,6 +28,8 @@ export default class MedievalScene extends BaseLevelScene {
     this.load.image('Tree1', 'assets/images/trees/Tree1.png');
     this.load.image('Tree2', 'assets/images/trees/Tree2.png');
     this.load.image('Tree3', 'assets/images/trees/Tree3.png');
+
+    // Arbustos
     this.load.image('bush21', 'assets/images/bush/Bush_simple2_1.png');
     this.load.image('bush22', 'assets/images/bush/Bush_simple2_2.png');
     this.load.image('bush23', 'assets/images/bush/Bush_simple2_3.png');
@@ -36,13 +39,13 @@ export default class MedievalScene extends BaseLevelScene {
     this.load.image('blueflowerbush2', 'assets/images/bush/Bush_blue_flowers2.png');
     this.load.image('orangeflowerbush1', 'assets/images/bush/Bush_orange_flowers1.png');
     this.load.image('orangeflowerbush2', 'assets/images/bush/Bush_orange_flowers2.png');
+
+    // Casas Medievais
     this.load.image('medievalHouse1', 'assets/images/medieval/medievalHouse1.png');
     this.load.image('medievalHouse2', 'assets/images/medieval/medievalHouse2.png');
     this.load.image('medievalHouse4', 'assets/images/medieval/medievalHouse4.png');
     this.load.image('medievalHouse5', 'assets/images/medieval/medievalHouse5.png');
     this.load.image('medievalHouse6', 'assets/images/medieval/medievalHouse6.png');
-    this.load.image('package', 'assets/images/package.png');
-    this.load.audio('medievalMusic', 'assets/audio/medieval_theme.mp3');
   }
 
   create() {
