@@ -25,19 +25,26 @@ export default class MedievalSpawner {
     this.bushSprites = [
       'autumnbush1', 'autumnbush2',
       'blueflowerbush1', 'blueflowerbush2',
-      'orangeflowerbush1','orangeflowerbush2',
+      'orangeflowerbush1', 'orangeflowerbush2',
       'bush21', 'bush22', 'bush23'
     ];
 
     this.treePositions = [
       { x: 680, y: 500 }, { x: 1620, y: 300 }, { x: 1560, y: 980 },
-      { x: 2100, y: 990 }, { x: 2220, y:1100 }, { x: 80, y: 300 },
+      { x: 2100, y: 990 }, { x: 2220, y: 1100 }, { x: 80, y: 300 },
       { x: 2540, y: 990 }, { x: 1500, y: 600 }
     ];
   }
 
   isPositionTaken(x, y, usedPositions, minDist = 50) {
-    return usedPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < usedPositions.length; i++) {
+      const p = usedPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   addTree(x, y, key, scale) {
@@ -45,8 +52,8 @@ export default class MedievalSpawner {
     tree.setScale(scale);
     tree.setOrigin(0.5, 1);
 
-    const trunkWidth = tree.width * scale * 0.1; 
-    const trunkHeight = tree.height * scale * 0.1; 
+    const trunkWidth = tree.width * scale * 0.1;
+    const trunkHeight = tree.height * scale * 0.1;
 
     const matterBody = this.scene.matter.add.rectangle(
       x,
@@ -61,7 +68,6 @@ export default class MedievalSpawner {
   }
 
   spawnTrees() {
-    // Adiciona posições fixas, evitando duplicação
     this.treePositions.forEach(pos => {
       const key = Phaser.Utils.Array.GetRandom(this.treeKeys);
       this.addTree(pos.x, pos.y, key, 1.8);
@@ -163,7 +169,6 @@ export default class MedievalSpawner {
   spawnHouses() {
     const houseSize = 220;
     const spacing = 10;
-
     const topY = -120;
     const topXStart = 250;
     const topHouseCount = 11;
@@ -201,6 +206,6 @@ export default class MedievalSpawner {
       house.setRectangle(houseSize - 120, houseSize - 90);
       house.setStatic(true);
       house.setData('tag', 'house');
-    });
-  }
+    });
+  }
 }

@@ -25,31 +25,42 @@ export default class GameSpawner {
     this.bushSprites = [
       'pinkflowerbush2', 'pinkflowerbush1', 'pinkflowerbush3',
       'blueflowerbush1', 'blueflowerbush2',
-      'orangeflowerbush1','orangeflowerbush2',
+      'orangeflowerbush1', 'orangeflowerbush2',
       'bush21', 'bush22', 'bush23'
     ];
 
     this.treePositions = [
       { x: 680, y: 500 }, { x: 1620, y: 300 }, { x: 1560, y: 980 },
-      { x: 2100, y: 990 }, { x: 2220, y:1100 }, { x: 80, y: 300 },
+      { x: 2100, y: 990 }, { x: 2220, y: 1100 }, { x: 80, y: 300 },
       { x: 2540, y: 990 }, { x: 1500, y: 600 }
     ];
   }
 
   isPositionTaken(x, y, usedPositions, minDist = 80) {
-    const avoidCenter = Phaser.Math.Distance.Between(x, y, this.worldWidth / 2, this.worldHeight / 2) < 100;
-    if (avoidCenter) return true;
+    const minDistSq = minDist * minDist;
+    const centerX = this.worldWidth / 2;
+    const centerY = this.worldHeight / 2;
+    const dxCenter = x - centerX;
+    const dyCenter = y - centerY;
 
-    return usedPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    if (dxCenter * dxCenter + dyCenter * dyCenter < 10000) return true;
+
+    for (let i = 0; i < usedPositions.length; i++) {
+      const p = usedPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
+
   addTree(x, y, key, scale) {
     const tree = this.scene.add.image(x, y, key);
     tree.setScale(scale);
     tree.setOrigin(0.5, 1);
-    tree.setDepth(5000);
 
-    const trunkWidth = tree.width * scale * 0.1; 
-    const trunkHeight = tree.height * scale * 0.1; 
+    const trunkWidth = tree.width * scale * 0.1;
+    const trunkHeight = tree.height * scale * 0.1;
 
     const matterBody = this.scene.matter.add.rectangle(
       x,
@@ -64,7 +75,6 @@ export default class GameSpawner {
   }
 
   spawnTrees() {
-    // Adiciona posições fixas, evitando duplicação
     this.treePositions.forEach(pos => {
       const key = Phaser.Utils.Array.GetRandom(this.treeKeys);
       this.addTree(pos.x, pos.y, key, 1.8);
@@ -166,7 +176,6 @@ export default class GameSpawner {
   spawnHouses() {
     const houseSize = 220;
     const spacing = 10;
-
     const topY = -120;
     const topXStart = 250;
     const topHouseCount = 11;
@@ -204,6 +213,6 @@ export default class GameSpawner {
       house.setRectangle(houseSize - 120, houseSize - 90);
       house.setStatic(true);
       house.setData('tag', 'house');
-    });
-  }
+    });
+  }
 }

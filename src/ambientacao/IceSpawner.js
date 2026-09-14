@@ -55,11 +55,25 @@ export default class IceSpawner {
   }
 
   isPositionBlocked(x, y, minDist = 100) {
-    return this.blockedAreas.some(pos => Phaser.Math.Distance.Between(pos.x, pos.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < this.blockedAreas.length; i++) {
+      const pos = this.blockedAreas[i];
+      const dx = pos.x - x;
+      const dy = pos.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   isPositionTaken(x, y, usedPositions, minDist = 60) {
-    return usedPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < usedPositions.length; i++) {
+      const p = usedPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   addStaticAsset(x, y, key, scale = 1, hitbox = { widthFactor: 0.1, heightFactor: 0.1 }) {
@@ -104,14 +118,12 @@ export default class IceSpawner {
 
     for (let i = 0; i < treeCount; i++) {
       const y = 100 + i * columnSpacing;
-
       this.addTree(60, y, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScale);
       this.addTree(this.worldWidth - 60, y, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScale);
     }
 
     for (let i = 0; i < treeCount; i++) {
       const y = 100 + i * columnSpacing;
-
       this.addTree(60, this.worldHeight - y, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScale);
       this.addTree(this.worldWidth - 60, this.worldHeight - y, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScale);
     }
@@ -122,7 +134,6 @@ export default class IceSpawner {
 
     for (let i = 0; i < treeCountRow; i++) {
       const x = 100 + i * rowSpacing;
-
       this.addTree(x, 100, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScaleRow);
       this.addTree(x, this.worldHeight - 30, Phaser.Utils.Array.GetRandom(this.treeKeys), treeScaleRow);
     }
@@ -156,7 +167,7 @@ export default class IceSpawner {
           if (!this.isPositionTaken(finalX, finalY, usedPositions, 100)) {
             this.addTree(finalX, finalY, key, scale);
             usedPositions.push({ x: finalX, y: finalY });
-            this.blockedAreas.push({ x: finalX, y: finalY, radius: 100 });
+            this.blockedAreas.push({ x, y: finalY, radius: 100 });
           }
         }
       }

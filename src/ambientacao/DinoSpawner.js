@@ -23,7 +23,14 @@ export default class DinoSpawner {
   }
 
   isPositionTaken(x, y, usedPositions, minDist = 60) {
-    return usedPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < usedPositions.length; i++) {
+      const p = usedPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   addStaticObstacle(x, y, key, scale = 1, widthFactor = 0.2, heightFactor = 0.2) {
@@ -42,9 +49,7 @@ export default class DinoSpawner {
   spawnCacti() {
     const usedPositions = [];
     const spacing = 140;
-    const cactusScale = 1.6;
     const count = Math.floor(this.worldHeight / spacing);
-
     const cactusBarrierScale = 2.1;
 
     // Bordas laterais

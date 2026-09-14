@@ -30,11 +30,25 @@ export default class SeaSpawner {
   }
 
   isPositionTaken(x, y, usedPositions, minDist = 50) {
-    return usedPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < usedPositions.length; i++) {
+      const p = usedPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   isNearRuins(x, y, minDist = 150) {
-    return this.ruinPositions.some(p => Phaser.Math.Distance.Between(p.x, p.y, x, y) < minDist);
+    const minDistSq = minDist * minDist;
+    for (let i = 0; i < this.ruinPositions.length; i++) {
+      const p = this.ruinPositions[i];
+      const dx = p.x - x;
+      const dy = p.y - y;
+      if (dx * dx + dy * dy < minDistSq) return true;
+    }
+    return false;
   }
 
   addCoral(x, y, key, scale) {
@@ -110,7 +124,6 @@ export default class SeaSpawner {
   }
 
   spawnBush() {
-    const positions = [];
     const count = 50;
     const margin = 60;
 
