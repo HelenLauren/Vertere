@@ -1,10 +1,10 @@
 export default class MenuScene extends Phaser.Scene {
   constructor() {
     super('MenuScene');
+    this.enterKeyHandler = null;
   }
 
   preload() {
-    // Só carrega assets do menu (background, personagens e música do menu)
     this.load.image('background', 'assets/images/background.png');
     this.load.spritesheet('Helen', 'entidades/helen_idle.png', { frameWidth: 64, frameHeight: 64 });
     this.load.spritesheet('Helena', 'entidades/helena_idle.png', { frameWidth: 64, frameHeight: 64 });
@@ -13,36 +13,43 @@ export default class MenuScene extends Phaser.Scene {
   }
 
   create() {
-  this.centerX = this.cameras.main.width / 2;
-  this.centerY = this.cameras.main.height / 2;
-  this.backgroundImage = this.add.image(this.centerX, this.centerY, 'background')
-    .setOrigin(0.5)
-    .setDepth(-1)
-    .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+    this.centerX = this.cameras.main.width / 2;
+    this.centerY = this.cameras.main.height / 2;
 
-     if (!localStorage.getItem('progressoFases')) {
-    localStorage.setItem('progressoFases', JSON.stringify({ 1: true }));
+    this.backgroundImage = this.add.image(this.centerX, this.centerY, 'background')
+      .setOrigin(0.5)
+      .setDepth(-1)
+      .setDisplaySize(this.cameras.main.width, this.cameras.main.height);
+
+    if (!localStorage.getItem('progressoFases')) {
+      localStorage.setItem('progressoFases', JSON.stringify({ 1: true }));
     }
 
-  this.createMainMenu(); 
-  this.createSelecionarPersonagemSection();
-  this.createSobreSection();
-  this.createComoJogarSection();
-  this.createSelecionarFaseSection();
+    this.createMainMenu();
+    this.createSelecionarPersonagemSection();
+    this.createSobreSection();
+    this.createComoJogarSection();
+    this.createSelecionarFaseSection();
 
+    this.showMenu();
 
-  this.showMenu();
-  if (!this.sound.get('menu-theme')) {
-  this.menuMusic = this.sound.add('menu-theme', {
-    loop: true,
-    volume: 0.5
-  });
-  this.menuMusic.play();
-}
-}
+    if (!this.sound.get('menu-theme')) {
+      this.menuMusic = this.sound.add('menu-theme', {
+        loop: true,
+        volume: 0.5
+      });
+      this.menuMusic.play();
+    } else {
+      this.menuMusic = this.sound.get('menu-theme');
+      if (!this.menuMusic.isPlaying) {
+        this.menuMusic.play();
+      }
+    }
+  }
 
   createMainMenu() {
     this.menuContainer = this.add.container(this.centerX, this.centerY - 80);
+
     const title = this.add.text(0, -120, 'Vertere', {
       fontSize: '40px',
       fontFamily: '"Press Start 2P"',
@@ -70,7 +77,7 @@ export default class MenuScene extends Phaser.Scene {
     });
 
     const btnResetar = this.createMenuButton('Resetar Progresso', 200, () => {
-      const confirmar = confirm("Tem certeza que deseja resetar seu progresso?");
+      const confirmar = confirm('Tem certeza que deseja resetar seu progresso?');
       if (confirmar) {
         localStorage.removeItem('progressoFases');
         this.scene.restart();
@@ -110,6 +117,7 @@ export default class MenuScene extends Phaser.Scene {
     btn.on('pointerout', () => {
       btn.setStyle({
         backgroundColor: '#3b2f2f',
+        color: '#ffffff',
       });
     });
     return btn;
@@ -137,10 +145,11 @@ export default class MenuScene extends Phaser.Scene {
 
     this.selecionarPersonagemContainer.add(bg);
     this.selecionarPersonagemContainer.add(title);
+
     personagens.forEach((p, idx) => {
       const x = (idx - 1) * spacingX;
-
       const animKey = `${p.sprite}_frente`;
+
       if (!this.anims.exists(animKey)) {
         this.anims.create({
           key: animKey,
@@ -179,7 +188,7 @@ export default class MenuScene extends Phaser.Scene {
       }).setOrigin(0.5);
 
       this.selecionarPersonagemContainer.add([sprite, nomeText]);
-      });
+    });
 
     const btnVoltar = this.createMenuButton('Voltar', 150, () => {
       this.showMenu();
@@ -188,13 +197,16 @@ export default class MenuScene extends Phaser.Scene {
     this.selecionarPersonagemContainer.add(btnVoltar);
     this.selecionarPersonagemContainer.setVisible(false);
   }
+
   startPreview(personagemKey) {
     this.selectedCharacter = personagemKey;
     if (this.personagem) this.personagem.destroy();
     if (this.previewContainer) this.previewContainer.destroy();
-    if (!this.anims.exists(`${personagemKey}_frente`)) {
+
+    const animKey = `${personagemKey}_frente`;
+    if (!this.anims.exists(animKey)) {
       this.anims.create({
-        key: `${personagemKey}_frente`,
+        key: animKey,
         frames: this.anims.generateFrameNumbers(personagemKey, { start: 0, end: 4 }),
         frameRate: 3,
         repeat: -1,
@@ -211,7 +223,7 @@ export default class MenuScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     this.personagem = this.add.sprite(centerX, centerY - 40, personagemKey).setOrigin(0.5);
-    this.personagem.play(`${personagemKey}_frente`);
+    this.personagem.play(animKey);
     this.personagem.setScale(3.5);
 
     const textBg = this.add.rectangle(centerX, centerY + 100, 360, 40, 0x1f1f1f, 0.9).setOrigin(0.5);
@@ -224,10 +236,11 @@ export default class MenuScene extends Phaser.Scene {
       align: 'center'
     }).setOrigin(0.5);
 
-    const btnVoltarPreview = this.createMenuButton('Voltar', centerY + 150 - centerY, () => {
+    const btnVoltarPreview = this.createMenuButton('Voltar', 0, () => {
+      this.clearEnterListener();
       this.previewContainer.destroy();
       this.selecionarPersonagemContainer.setVisible(true);
-      });
+    });
     btnVoltarPreview.setPosition(centerX, centerY + 150);
 
     this.previewContainer.add([
@@ -238,13 +251,23 @@ export default class MenuScene extends Phaser.Scene {
       btnVoltarPreview
     ]);
 
-    this.input.keyboard.once('keydown-ENTER', () => {
+    this.clearEnterListener();
+    this.enterKeyHandler = () => {
       localStorage.setItem('personagemSelecionado', personagemKey);
       if (this.menuMusic) {
         this.menuMusic.stop();
       }
+      this.clearEnterListener();
       this.scene.start('GameScene');
-      });
+    };
+    this.input.keyboard.once('keydown-ENTER', this.enterKeyHandler);
+  }
+
+  clearEnterListener() {
+    if (this.enterKeyHandler) {
+      this.input.keyboard.off('keydown-ENTER', this.enterKeyHandler);
+      this.enterKeyHandler = null;
+    }
   }
 
   createSobreSection() {
@@ -293,7 +316,7 @@ export default class MenuScene extends Phaser.Scene {
     const bg = this.add.rectangle(0, 0, 760, 400, 0x3b2f2f, 0.8);
     const title = this.add.text(0, -170, 'Como Jogar', {
       fontSize: '20px',
-      fontFamily:'"Press Start 2P"',
+      fontFamily: '"Press Start 2P"',
       color: '#81d3fc',
       fontStyle: 'bold',
       stroke: '#000',
@@ -311,13 +334,14 @@ export default class MenuScene extends Phaser.Scene {
 
     const text = this.add.text(0, -60, instrucoes, {
       fontSize: '15px',
-      fontFamily:'"Press Start 2P"',
+      fontFamily: '"Press Start 2P"',
       color: '#ffffff',
       align: 'left',
       stroke: '#000',
       strokeThickness: 2,
       wordWrap: { width: 720 }
     }).setOrigin(0.5);
+
     const btnVoltar = this.createMenuButton('Voltar', 150, () => {
       this.showMenu();
     });
@@ -350,6 +374,7 @@ export default class MenuScene extends Phaser.Scene {
       { nome: 'Fase 5', key: 'DinoScene' },
       { nome: 'Fase Final', key: 'FinalScene' }
     ];
+
     const progresso = JSON.parse(localStorage.getItem('progressoFases')) || {};
     progresso[1] = true;
     localStorage.setItem('progressoFases', JSON.stringify(progresso));
@@ -376,6 +401,7 @@ export default class MenuScene extends Phaser.Scene {
         if (this.menuMusic) {
           this.menuMusic.stop();
         }
+        this.clearEnterListener();
         this.scene.start(fase.key);
       });
       btn.x = x;
@@ -403,6 +429,7 @@ export default class MenuScene extends Phaser.Scene {
     this.selecionarFaseContainer.setVisible(false);
     this.selecionarPersonagemContainer.setVisible(false);
   }
+
   showSelecionarPersonagem() {
     this.menuContainer.setVisible(false);
     this.sobreContainer.setVisible(false);
@@ -410,13 +437,14 @@ export default class MenuScene extends Phaser.Scene {
     this.selecionarFaseContainer.setVisible(false);
     this.selecionarPersonagemContainer.setVisible(true);
   }
+
   showSelecionarFaseSection() {
     this.menuContainer.setVisible(false);
     this.sobreContainer.setVisible(false);
     this.comoJogarContainer.setVisible(false);
     this.selecionarFaseContainer.setVisible(true);
     this.selecionarPersonagemContainer.setVisible(false);
-    }
+  }
 
   showSobreSection() {
     this.menuContainer.setVisible(false);
@@ -424,10 +452,15 @@ export default class MenuScene extends Phaser.Scene {
     this.comoJogarContainer.setVisible(false);
     this.selecionarFaseContainer.setVisible(false);
   }
+
   showComoJogarSection() {
     this.menuContainer.setVisible(false);
     this.sobreContainer.setVisible(false);
     this.comoJogarContainer.setVisible(true);
     this.selecionarFaseContainer.setVisible(false);
+  }
+
+  shutdown() {
+    this.clearEnterListener();
   }
 }

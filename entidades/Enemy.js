@@ -1,17 +1,16 @@
 export default class Enemy extends Phaser.Physics.Matter.Image {
   constructor(scene, x, y) {
     const radius = 20;
-
-    const graphics = scene.add.graphics();
-    graphics.fillStyle(0xff0000, 1); 
-    graphics.fillCircle(radius, radius, radius);
-
     const textureKey = 'enemyCircle';
 
     if (!scene.textures.exists(textureKey)) {
+      const graphics = scene.add.graphics();
+      graphics.fillStyle(0xff0000, 1);
+      graphics.fillCircle(radius, radius, radius);
       graphics.generateTexture(textureKey, radius * 2, radius * 2);
+      graphics.destroy();
     }
-    graphics.destroy(); 
+
     super(scene.matter.world, x, y, textureKey);
 
     scene.add.existing(this);
