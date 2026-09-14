@@ -1,7 +1,17 @@
+import { ENEMY_CONFIG } from '../src/config/constants.js';
+
+/**
+ * Representa um inimigo circular com física Matter.js no jogo.
+ */
 export default class Enemy extends Phaser.Physics.Matter.Image {
+  /**
+   * @param {Phaser.Scene} scene - Cena ativa do Phaser.
+   * @param {number} x - Posição inicial X.
+   * @param {number} y - Posição inicial Y.
+   */
   constructor(scene, x, y) {
-    const radius = 20;
-    const textureKey = 'enemyCircle';
+    const radius = ENEMY_CONFIG.RADIUS;
+    const textureKey = ENEMY_CONFIG.TEXTURE_KEY;
 
     if (!scene.textures.exists(textureKey)) {
       const graphics = scene.add.graphics();
@@ -17,7 +27,7 @@ export default class Enemy extends Phaser.Physics.Matter.Image {
 
     this.setCircle(radius);
     this.setFixedRotation();
-    this.setFrictionAir(0.2);
+    this.setFrictionAir(ENEMY_CONFIG.FRICTION_AIR);
     this.setData('tag', 'enemy');
   }
 }

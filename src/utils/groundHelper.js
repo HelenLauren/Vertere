@@ -1,8 +1,24 @@
+import { DEPTHS, WORLD_CONFIG } from '../config/constants.js';
+
 /**
- * Helper para criação e cache de texturas de chão em mosaico/pixel art.
- * Substitui o loop pesado de >114.000 chamadas fillRect por um único TileSprite otimizado.
+ * Cria ou recupera uma textura procedural em padrão de mosaico e adiciona um TileSprite na cena.
+ * 
+ * @param {Phaser.Scene} scene - Cena do Phaser onde o chão será adicionado.
+ * @param {string} textureKey - Chave identificadora única da textura no cache do Phaser.
+ * @param {number} color1 - Cor primária em formato hexadecimal
+ * @param {number} color2 - Cor secundária em formato hexadecimal
+ * @param {number} [tileSize=WORLD_CONFIG.TILE_SIZE] - Tamanho em pixels de cada ladrilho de ruído.
+ * @param {number} [textureSize=192] - Tamanho total da textura gerada (largura e altura).
+ * @returns {Phaser.GameObjects.TileSprite} Instância do TileSprite criado e posicionado.
  */
-export function createGroundTileSprite(scene, textureKey, color1, color2, tileSize = 6, textureSize = 192) {
+export function createGroundTileSprite(
+  scene,
+  textureKey,
+  color1,
+  color2,
+  tileSize = WORLD_CONFIG.TILE_SIZE,
+  textureSize = 192
+) {
   if (!scene.textures.exists(textureKey)) {
     const graphics = scene.make.graphics({ x: 0, y: 0, add: false });
     const tilesPerSide = Math.floor(textureSize / tileSize);
@@ -21,5 +37,5 @@ export function createGroundTileSprite(scene, textureKey, color1, color2, tileSi
 
   return scene.add.tileSprite(0, 0, scene.worldWidth, scene.worldHeight, textureKey)
     .setOrigin(0, 0)
-    .setDepth(-1000);
+    .setDepth(DEPTHS.GROUND);
 }

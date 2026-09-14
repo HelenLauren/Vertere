@@ -1,23 +1,36 @@
+import { PLAYER_CONFIG } from '../src/config/constants.js';
+
+/**
+ * Representa o personagem controlado pelo jogador no mundo físico Matter.js.
+ */
 export default class Player extends Phaser.Physics.Matter.Sprite {
+  /**
+   * @param {Phaser.Scene} scene - Cena ativa do Phaser.
+   * @param {number} x - Posição inicial X.
+   * @param {number} y - Posição inicial Y.
+   * @param {string} texture - Chave da textura do personagem selecionado.
+   */
   constructor(scene, x, y, texture) {
     super(scene.matter.world, x, y, texture);
 
     scene.add.existing(this);
 
-    this.setScale(2);
+    this.setScale(PLAYER_CONFIG.SCALE);
     this.setFixedRotation();
-    this.setFrictionAir(0.2);
+    this.setFrictionAir(PLAYER_CONFIG.FRICTION_AIR);
     this.setData('tag', 'player');
 
     this.personagem = texture;
     this.lastDirection = 'front';
-
-    this.vidas = 3;
+    this.vidas = PLAYER_CONFIG.INITIAL_LIVES;
     this.invulneravel = false;
 
     this.initAnimations(scene, texture);
   }
 
+  /**
+   * Processa a perda de vida do jogador, ativando estado temporário de invulnerabilidade.
+   */
   perderVida() {
     if (this.invulneravel) return;
 
@@ -25,7 +38,7 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     this.invulneravel = true;
 
     this.scene.hud?.atualizarVidas(this.vidas);
-    this.scene.time.delayedCall(1500, () => {
+    this.scene.time.delayedCall(PLAYER_CONFIG.INVULNERABILITY_TIME_MS, () => {
       this.invulneravel = false;
     });
 
@@ -34,9 +47,14 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
-  initAnimations(scene, personagemSelecionado) {
+  /**
+   * Cria as animações de spritesheet caso ainda não existam no AnimationManager da cena.
+   * 
+   * @param {Phaser.Scene} scene
+   * @param {string} prefix - Nome do personagem (ex: 'Helen', 'Helena', 'Raissa').
+   */
+  initAnimations(scene, prefix) {
     const anims = scene.anims;
-    const prefix = personagemSelecionado;
 
     const animConfigs = [
       { key: `${prefix}_front`, frames: [0, 1, 2, 3, 4], frameRate: 5 },
@@ -46,18 +64,23 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
       { key: `${prefix}_idle`, frames: [0, 1, 2, 3, 4], frameRate: 1 }
     ];
 
-    animConfigs.forEach(cfg => {
-      if (!anims.exists(cfg.key)) {
+    animConfigs.forEach(({ key, frames, frameRate }) => {
+      if (!anims.exists(key)) {
         anims.create({
-          key: cfg.key,
-          frames: anims.generateFrameNumbers(prefix, { frames: cfg.frames }),
-          frameRate: cfg.frameRate,
+          key,
+          frames: anims.generateFrameNumbers(prefix, { frames }),
+          frameRate,
           repeat: -1
         });
       }
     });
   }
 
+  /**
+   * Toca a animação da direção especificada caso não esteja em execução.
+   * 
+   * @param {string} direction - 'front' | 'back' | 'left' | 'right' | 'idle'
+   */
   playAnimation(direction) {
     const animKey = `${this.personagem}_${direction}`;
     if (this.anims.currentAnim?.key !== animKey) {
@@ -65,13 +88,18 @@ export default class Player extends Phaser.Physics.Matter.Sprite {
     }
   }
 
+  /**
+   * Atualiza os vetores de velocidade e animação com base no estado das teclas direcionais.
+   * 
+   * @param {Phaser.Types.Input.Keyboard.CursorKeys} cursors - Objeto com as teclas de cursor.
+   */
   updateMovement(cursors) {
     if (!cursors) return;
 
     let moving = false;
     let vx = 0;
     let vy = 0;
-    const speed = 5;
+    const speed = PLAYER_CONFIG.SPEED;
 
     if (cursors.left?.isDown) {
       vx = -speed;
